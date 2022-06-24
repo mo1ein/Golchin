@@ -1,0 +1,6 @@
+fitz
+pdfkit
+wkhtmltopdf
+googletrans==4.0.0-rc1
+PyPDF2==1.26.0
+PyMuPDF==1.19.3

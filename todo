@@ -1,0 +1,30 @@
+
+[] - add txt, csv, pdf to gitignore
+[] - remove all ing and all ed and all s words
+[] - add epub for read
+[] - use as package... for use in terminal or other way
+[] - add gitttt...
+[] - add feature to read specefic pages like [3, 5, 6] not all input from user
+[] - input user remove list...
+[] - change name of pdf2word
+[] - add input for all user or module
+[] - remove names like words...
+[] - put for but
+[] - some bug in trans func for srt and huge pdfs...
+[] - dicts i think more complicated
+[] - unicode range
+[] - to google sheet use google sheet for export
+[] - other lang translate google
+[] - put pdf cover first page of output
+[] - do this with go
+[] - chart for word statistics
+[] - persian to english words trans...
+
+textract lib
+pymupdf
+pikepdf
+://github.com/dwyl/english-words/blob/master/words.txt
+https://github.com/arineng/arincli/blob/master/lib/female-first-names.txt
+https://github.com/MatthiasWinkelmann/english-words-names-brands-places/blob/master/brands/brands.csv
+https://github.com/philipperemy/name-dataset/tree/master/names_dataset/v3
+https://github.com/dominictarr/random-name/blob/master/first-names.txt
