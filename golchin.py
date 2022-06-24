@@ -55,6 +55,7 @@ class pdf2word:
 
     def clean_words(self, fulltext: str) -> dict:
         # TODO: set unicode range for all langs
+        # TODO: set global var for path
         remove_words = self.read_txt('remove_words.txt')
         remove_words = remove_words.split()
         remove_male_names = self.read_txt('male_names_list.txt')
@@ -150,14 +151,14 @@ class pdf2word:
         # return res, not_added_count, blacklist_words, not_word_count, duplicates_count
 
     # change var names...
-    def trans(self, res: dict) -> dict:
+    def translate_words(self, res: dict) -> dict:
         # print(len(res))
         # print(res)
 
         # TODO: use async
         # TODO: langs ask from user
-        from_lang = "en"
-        to_lang = "fa"
+        from_lang = 'en'
+        to_lang = 'fa'
         translator = Translator()
         limit = 5000
         str_chunk = []
@@ -280,10 +281,10 @@ class pdf2word:
         return f'<!DOCTYPE html><head><meta charset="UTF-8">{style}</head><body><center>{banner}{words_log}<br><br><table>{html}</table></center></body>'
 
     def export_pdf(self, html: str, file_name: str) -> str:
-        html_fname = file_name + '.html'
+        html_fname = f'{file_name}.html'
         with open(html_fname, "w") as file:
             file.write(html)
-        pdf_name = file_name + '.pdf'
+        pdf_name = f'{file_name}.pdf'
         pdfkit.from_file(html_fname, pdf_name)
 
     def dic_to_csv(self,
@@ -297,25 +298,23 @@ class pdf2word:
                    ) -> str:
         keys = data[0].keys()
         # TODO: add statistics words_len and.....
-        csv_fname = filename + '.csv'
+        csv_fname = f'{filename}.csv'
         with open(csv_fname, "w", encoding='utf8', newline='') as file:
             dict_writer = csv.DictWriter(file, keys)
             dict_writer.writeheader()
             dict_writer.writerows(data)
-
-        # TODO: can use read file for removeWords method text...
         # TODO: can user stringio instead of string...
 
 
 # TODO: do better main
-def main(ext: str = "srt"):
+def main(ext: str = 'srt'):
     p2w = pdf2word()
-    fname = "my.srt"
-    if ext == "srt":
+    fname = 'my.srt'
+    if ext == 'srt':
         fulltext = p2w.read_srt(fname)
         words_list, not_added_count, blacklist_words, not_word_count, duplicates_count = p2w.clean_words(
             fulltext)
-    elif ext == "pdf":
+    elif ext == 'pdf':
         fulltext = p2w.read_pdf(fname)
         words_list, not_added_count, blacklist_words, not_word_count, duplicates_count = p2w.clean_words(
             fulltext)
@@ -324,7 +323,7 @@ def main(ext: str = "srt"):
         words_list, not_added_count, blacklist_words, not_word_count, duplicates_count = p2w.clean_words(
             fulltext)
 
-    d = p2w.trans(words_list)
+    d = p2w.translate_words(words_list)
     # sort dicts by most frequent words to least
     d = sorted(d, key=lambda d: d['count'], reverse=True)
     '''
@@ -334,7 +333,7 @@ def main(ext: str = "srt"):
     '''
     html = p2w.dic_to_html(
         d, len(d), not_added_count, blacklist_words, not_word_count, duplicates_count)
-    p2w.export_pdf(html, "t")
+    p2w.export_pdf(html, 't')
 
 
 main()
