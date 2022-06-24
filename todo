@@ -4,15 +4,17 @@ done:
     [x] - add gitttt...
     [x] - put for but
     [x] - change name of pdf2word
+    [x] - add feature to read specefic pages like [3, 5, 6] not all input from user
 
 
 not done:
 
+    [] - alphabetical order of blacklist words
+    [] - add multiple page like [1, 5, 20]
     [] - remove all ing and all ed and all s words
     [] - dicts i think more complicated
     [] - add epub for read
     [] - use as package... for use in terminal or other way
-    [] - add feature to read specefic pages like [3, 5, 6] not all input from user
     [] - input user remove list...
     [] - add input for all user or module
     [] - remove names like words...
