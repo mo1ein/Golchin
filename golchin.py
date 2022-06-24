@@ -43,12 +43,17 @@ class pdf2word:
         text = ''.join(text)
         return text
 
-    def read_pdf(self, path: str) -> str:
+    def read_pdf(self, path: str, page_num: int = None) -> str:
+        # TODO: list of specefic page
         text = ""
         try:
             with fitz.open(path) as doc:
-                for page in doc:
-                    text += page.get_text()
+                if page_num is None:
+                    for page in doc:
+                        text += page.get_text()
+                else:
+                    page = doc.loadPage(page_num)
+                    text = page.getText('text')
         except (OSError, UnicodeDecodeError, FileNotFoundError) as err:
             raise (err)
         return text
@@ -280,13 +285,6 @@ class pdf2word:
         banner = '<h1>WordsGolchin</h1>'
         return f'<!DOCTYPE html><head><meta charset="UTF-8">{style}</head><body><center>{banner}{words_log}<br><br><table>{html}</table></center></body>'
 
-    def export_pdf(self, html: str, file_name: str) -> str:
-        html_fname = f'{file_name}.html'
-        with open(html_fname, "w") as file:
-            file.write(html)
-        pdf_name = f'{file_name}.pdf'
-        pdfkit.from_file(html_fname, pdf_name)
-
     def dic_to_csv(self,
                    data: list,
                    words_len: int,
@@ -298,24 +296,33 @@ class pdf2word:
                    ) -> str:
         keys = data[0].keys()
         # TODO: add statistics words_len and.....
-        csv_fname = f'{filename}.csv'
-        with open(csv_fname, "w", encoding='utf8', newline='') as file:
+        csv_name = f'{filename}.csv'
+        with open(csv_name, "w", encoding='utf8', newline='') as file:
             dict_writer = csv.DictWriter(file, keys)
             dict_writer.writeheader()
             dict_writer.writerows(data)
         # TODO: can user stringio instead of string...
 
+    def export_pdf(self, html: str, file_name: str) -> str:
+        html_name = f'{file_name}.html'
+        with open(html_name, "w") as file:
+            file.write(html)
+        pdf_name = f'{file_name}.pdf'
+        pdfkit.from_file(html_name, pdf_name)
+
 
 # TODO: do better main
-def main(ext: str = 'srt'):
+def main(ext: str = 'pdf'):
     p2w = pdf2word()
-    fname = 'my.srt'
+    fname = 'my.pdf'
     if ext == 'srt':
         fulltext = p2w.read_srt(fname)
         words_list, not_added_count, blacklist_words, not_word_count, duplicates_count = p2w.clean_words(
             fulltext)
     elif ext == 'pdf':
+        # fulltext = p2w.read_pdf(fname, 707)
         fulltext = p2w.read_pdf(fname)
+        print(fulltext)
         words_list, not_added_count, blacklist_words, not_word_count, duplicates_count = p2w.clean_words(
             fulltext)
     else:
