@@ -20,6 +20,9 @@
 [] - chart for word statistics
 [] - persian to english words trans...
 
+names:
+    https://namecensus.com/
+
 textract lib
 pymupdf
 pikepdf
