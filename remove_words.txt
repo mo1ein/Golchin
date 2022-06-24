@@ -1567,6 +1567,7 @@ hates
 lie
 lies
 secret
+secrets
 ear
 ears
 eye
