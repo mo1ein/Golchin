@@ -55,13 +55,16 @@ class pdf2word:
 
     def clean_words(self, fulltext: str) -> dict:
         # TODO: set unicode range for all langs
-
-        stop_words = []
-        with open("removeWords.txt", "r") as f:
-            j = f.readlines()
-
-        stop_words = ''.join(j)
-        stop_words = stop_words.split()
+        remove_words = self.read_txt('remove_words.txt')
+        remove_words = remove_words.split()
+        remove_male_names = self.read_txt('male_names_list.txt')
+        remove_male_names = remove_male_names.split()
+        remove_female_names = self.read_txt('female_names_list.txt')
+        remove_female_names = remove_female_names.split()
+        remove_sur_names = self.read_txt('surnames_list.txt')
+        remove_sur_names = remove_sur_names.split()
+        stop_words = remove_words + remove_male_names + \
+            remove_female_names + remove_sur_names
 
         text = ''
         for char in fulltext:
@@ -304,6 +307,7 @@ class pdf2word:
         # TODO: can user stringio instead of string...
 
 
+# TODO: do better main
 def main(ext: str = "srt"):
     p2w = pdf2word()
     fname = "my.srt"
@@ -323,6 +327,7 @@ def main(ext: str = "srt"):
     d = p2w.trans(words_list)
     # sort dicts by most frequent words to least
     d = sorted(d, key=lambda d: d['count'], reverse=True)
+    '''
     # if export csv
     p2w.dic_to_csv(
         d, len(d), not_added_count, blacklist_words, not_word_count, duplicates_count, "out.csv")
@@ -330,7 +335,6 @@ def main(ext: str = "srt"):
     html = p2w.dic_to_html(
         d, len(d), not_added_count, blacklist_words, not_word_count, duplicates_count)
     p2w.export_pdf(html, "t")
-    '''
 
 
 main()
