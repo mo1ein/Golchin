@@ -147,7 +147,6 @@ class pdf2word:
             duplicates_count
         )
         return result
-        # word_count = len(words)
         # return res, not_added_count, blacklist_words, not_word_count, duplicates_count
 
     # change var names...
@@ -277,7 +276,8 @@ class pdf2word:
             '</tr>'
             '</table>'
         )
-        return f'<!DOCTYPE html><head><meta charset="UTF-8">{style}</head><body><center>{words_log}<br><br><table>{html}</table></center></body>'
+        banner = '<h1>WordsGolchin</h1>'
+        return f'<!DOCTYPE html><head><meta charset="UTF-8">{style}</head><body><center>{banner}{words_log}<br><br><table>{html}</table></center></body>'
 
     def export_pdf(self, html: str, file_name: str) -> str:
         html_fname = file_name + '.html'
