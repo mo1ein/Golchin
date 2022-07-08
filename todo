@@ -11,7 +11,6 @@ not done:
 
     [] - alphabetical order of blacklist words
     [] - add multiple page like [1, 5, 20]
-    [] - remove all ing and all ed and all s words
     [] - dicts i think more complicated
     [] - add epub for read
     [] - use as package... for use in terminal or other way
@@ -20,6 +19,7 @@ not done:
     [] - remove names like words...
     [] - some bug in trans func for srt and huge pdfs...
     [] - unicode range
+    [] - remove all ing and all ed and all s words
     [] - to google sheet use google sheet for export
     [] - other lang translate google
     [] - do this with go
