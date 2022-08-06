@@ -370,6 +370,3 @@ def main(ext: str = 'pdf'):
         )
     )
     extract_text.export_pdf(html, 't')
-
-
-main()
