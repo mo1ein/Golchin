@@ -1,7 +1,10 @@
 
-
 *txt
 other/
+
+# telegram files
+*session
+*journal
 
 # generated files
 *.csv
