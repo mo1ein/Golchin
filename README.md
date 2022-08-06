@@ -1,14 +1,14 @@
 
 # Golchin
-##### Golchin is a telegram bot that extract English words from file and translate it to Persian.
+#### Golchin is a telegram bot that extract English words from file and translate it to Persian.
 
-#### Supported files
+### Supported files
 
 -  pdf
 -  srt
 -  txt
 
-#### Output files
+### Output files
 
 -  pdf
 -  csv
