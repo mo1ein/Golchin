@@ -1,16 +1,10 @@
 import os
-import time
-import math
-import asyncio
-import psycopg2
-from core.pdf2word import pdf2word
 from functools import wraps
+from configs import COMMANDS
 from typing import Union, List
-from utils.progress_bar import pbar
 from pyrogram import Client, filters
-from utils.cover_extractor import Cover
+from core.text_extractor import ExtractText
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message
-from config import FB_MSG, RECEIVE_FB_MSB, COMMANDS, FEEDBACKS
 
 # TODO: move to config?!
 user_data = {}
@@ -56,6 +50,7 @@ def create_button():
 
     return control_buttons
 
+
 def send_action(action):
     """Sends `action` while processing func command."""
     def decorator(func):
@@ -70,30 +65,6 @@ def send_action(action):
     return decorator
 
 
-"""
-@Client.on_message(
-    filters.reply &
-    filters.private &
-    ~filters.edited &
-    ~filters.command(COMMANDS)
-)
-async def reply_feedback(client, message):
-    '''
-    when user reply feedback message
-    '''
-    # user message replied to fb message
-    if message.reply_to_message.text == FB_MSG:
-        global FEEDBACKS
-        if message.from_user.id in FEEDBACKS:
-            FEEDBACKS[message.from_user.id].append(message.text)
-        else:
-            user_fbs = [message.text]
-            FEEDBACKS[message.from_user.id] = user_fbs
-        await message.reply_to_message.edit_text(RECEIVE_FB_MSB)
-
-"""
-
-
 @Client.on_message(
     filters.document &
     filters.private &
@@ -101,9 +72,9 @@ async def reply_feedback(client, message):
     ~filters.command(COMMANDS)
 )
 @send_action('typing')
-async def dl_file(client, message):
+async def dl_file(client, message) -> None:
     original_name = message.document.file_name
-    file_type = message.document.mime_type 
+    file_type = message.document.mime_type
     print(file_type)
     chat_id = message.chat.id
     user_data[chat_id] = original_name
@@ -119,14 +90,14 @@ async def dl_file(client, message):
         # f"dariaft shod! <b>{original_name}</b>\nwhat output do u want?",
         rcv_msg = await message.reply_text(
             f'فایلتو دارمش!\nفرمت خروجی رو انتخاب کن:',
-            quote = True,
+            quote=True,
             reply_markup=reply_markup,
-    )
+        )
     else:
         # TODO: change better text and bol with send message
         # await client.send_message(chat_id = chat_id, )
         # await message.reply_text("Please send correct file (pdf, text, srt)", quote = True)
-        await message.reply_text("این چیزی که فرستادی رو نمی‌فهمم.\nیه فایل درست بفرست. (pdf, srt, txt)", quote = True)
+        await message.reply_text("این چیزی که فرستادی رو نمی‌فهمم.\nیه فایل درست بفرست. (pdf, srt, txt)", quote=True)
 
     # TODO: caption
     '''
@@ -139,33 +110,38 @@ async def dl_file(client, message):
 @Client.on_callback_query()
 async def send_pdf(client, callback_query) -> None:
     query = callback_query
-    p2w = pdf2word()
+    extract_text = ExtractText()
     chat_id = query.message.chat.id
     filename = user_data[chat_id]
     ext = filename.split('.')[-1]
     name_without_ext = '.'.join(filename.split('.')[:-1])
-    output_filename = f'./upload/Words_of_{name_without_ext}' 
+    output_filename = f'./upload/Words_of_{name_without_ext}'
     path = f"./downloads/{filename}"
     print(os.path.exists(path))
 
     # TODO: check from mime not name
     if ext == 'pdf':
-        fulltext = p2w.read_pdf(path)
+        fulltext = extract_text.read_pdf(path)
     elif ext == 'txt':
-        fulltext = p2w.read_txt(path)
-        #TODO: add other format of srt
+        fulltext = extract_text.read_txt(path)
+        # TODO: add other format of srt
     elif ext == 'srt':
-        fulltext = p2w.read_srt(path)
+        fulltext = extract_text.read_srt(path)
 
     await query.message.edit_text(f'خب خروجی رو به شکل {query.data} برات می‌فرستم.\nیکم صبر کن الان آماده می‌شه.')
 
-    words_list, not_added_count, blacklist_words, not_word_count, duplicates_count = p2w.clean_words(
-        fulltext)
+    (
+        words_list,
+        not_added_count,
+        blacklist_words,
+        not_word_count,
+        duplicates_count
+    ) = extract_text.clean_words(fulltext)
 
-    #TODO: add bot username
+    # TODO: add bot username
     bot_username = ''
     CAPTION = f'بفرمایین خدمتتون!'
-    
+
     """
     CAPTION = (
         f'words length: {len(words_list)}\n'
@@ -176,36 +152,54 @@ async def send_pdf(client, callback_query) -> None:
     )
     """
 
-    #TODO: change var d name
-    d = p2w.trans(words_list)
+    # TODO: change var d name
+    d = extract_text.trans(words_list)
     d = sorted(d, key=lambda d: d['count'], reverse=True)
 
     if query.data == 'pdf' or query.data == 'html':
         # TODO: exception
         # if os.path.exists(path):
-        html = p2w.dic_to_html(
-            d, len(d), not_added_count, blacklist_words, not_word_count, duplicates_count)
+        html = extract_text.dic_to_html(
+            (
+                d,
+                len(d),
+                not_added_count,
+                blacklist_words,
+                not_word_count,
+                duplicates_count
+            )
+        )
         # TODO: name of output
-        p2w.export_pdf(html, output_filename)
+        extract_text.export_pdf(html, output_filename)
         # TODO: add send doc..to other func??
         ex = '.pdf' if query.data == 'pdf' else '.html'
         output_filename += ex
         await upload_document(client, query, output_filename, CAPTION)
     else:
-        p2w.dic_to_csv(
-            d, len(d), not_added_count, blacklist_words, not_word_count, duplicates_count, output_filename)
+        extract_text.dic_to_csv(
+            (
+                d,
+                len(d),
+                not_added_count,
+                blacklist_words,
+                not_word_count,
+                duplicates_count,
+                output_filename
+            )
+        )
 
         output_filename += '.csv'
         await upload_document(client, query, output_filename, CAPTION)
     await query.message.delete()
 
+
 @send_action('upload_document')
 async def upload_document(
-    client, 
+    client,
     message,
-    file_name: str, 
-    caption: str 
-):
+    file_name: str,
+    caption: str
+) -> None:
 
     # TODO: caption add some details words to caption...
     # print(file_name)
@@ -220,35 +214,3 @@ async def upload_document(
     )
     # os.remove(file_name)
     print('end of code')
-
-
-"""
-def main(ext: str = "srt"):
-    p2w = pdf2word()
-    fname = "my.srt"
-    if ext == "srt":
-        fulltext = p2w.read_srt(fname)
-        words_list, not_added_count, blacklist_words, not_word_count, duplicates_count = p2w.clean_words(
-            fulltext)
-    elif ext == "pdf":
-        fulltext = p2w.read_pdf(fname)
-        words_list, not_added_count, blacklist_words, not_word_count, duplicates_count = p2w.clean_words(
-            fulltext)
-    else:
-        fulltext = p2w.read_txt(fname)
-        words_list, not_added_count, blacklist_words, not_word_count, duplicates_count = p2w.clean_words(
-            fulltext)
-
-    d = p2w.trans(words_list)
-    # sort dicts by most frequent words to least
-    d = sorted(d, key=lambda d: d['count'], reverse=True)
-    # if export csv
-    p2w.dic_to_csv(
-        d, len(d), not_added_count, blacklist_words, not_word_count, duplicates_count, "out.csv")
-    '''
-    html = p2w.dic_to_html(
-        d, len(d), not_added_count, blacklist_words, not_word_count, duplicates_count)
-    p2w.export_pdf(html, "t.html")
-    '''
-# main()
-"""
