@@ -5,6 +5,8 @@ from typing import Union, List
 from pyrogram import Client, filters
 from core.text_extractor import ExtractText
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message
+from pyrogram.enums import ChatAction
+
 
 # TODO: move to config?!
 user_data = {}
@@ -51,7 +53,8 @@ def create_button():
     return control_buttons
 
 
-def send_action(action):
+# TODO: add typing
+def send_action(action: ChatAction):
     """Sends `action` while processing func command."""
     def decorator(func):
         @wraps(func)
@@ -68,11 +71,11 @@ def send_action(action):
 @Client.on_message(
     filters.document &
     filters.private &
-    ~filters.edited &
     ~filters.command(COMMANDS)
 )
-@send_action('typing')
+@send_action(ChatAction.TYPING)
 async def dl_file(client, message) -> None:
+    print('here')
     original_name = message.document.file_name
     file_type = message.document.mime_type
     print(file_type)
@@ -115,6 +118,7 @@ async def send_pdf(client, callback_query) -> None:
     filename = user_data[chat_id]
     ext = filename.split('.')[-1]
     name_without_ext = '.'.join(filename.split('.')[:-1])
+    # TODO: add exception for create upload dir if not exist
     output_filename = f'./upload/Words_of_{name_without_ext}'
     path = f"./downloads/{filename}"
     print(os.path.exists(path))
@@ -153,21 +157,19 @@ async def send_pdf(client, callback_query) -> None:
     """
 
     # TODO: change var d name
-    d = extract_text.trans(words_list)
+    d = extract_text.translate_words(words_list)
     d = sorted(d, key=lambda d: d['count'], reverse=True)
 
     if query.data == 'pdf' or query.data == 'html':
         # TODO: exception
         # if os.path.exists(path):
         html = extract_text.dic_to_html(
-            (
-                d,
-                len(d),
-                not_added_count,
-                blacklist_words,
-                not_word_count,
-                duplicates_count
-            )
+            d,
+            len(d),
+            not_added_count,
+            blacklist_words,
+            not_word_count,
+            duplicates_count
         )
         # TODO: name of output
         extract_text.export_pdf(html, output_filename)
@@ -177,15 +179,13 @@ async def send_pdf(client, callback_query) -> None:
         await upload_document(client, query, output_filename, CAPTION)
     else:
         extract_text.dic_to_csv(
-            (
-                d,
-                len(d),
-                not_added_count,
-                blacklist_words,
-                not_word_count,
-                duplicates_count,
-                output_filename
-            )
+            d,
+            len(d),
+            not_added_count,
+            blacklist_words,
+            not_word_count,
+            duplicates_count,
+            output_filename
         )
 
         output_filename += '.csv'
@@ -193,7 +193,7 @@ async def send_pdf(client, callback_query) -> None:
     await query.message.delete()
 
 
-@send_action('upload_document')
+@send_action(ChatAction.UPLOAD_DOCUMENT)
 async def upload_document(
     client,
     message,
