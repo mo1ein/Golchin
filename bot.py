@@ -1,5 +1,5 @@
 from pyrogram import Client
-from config import BOT_TOKEN, API_ID, API_HASH
+from configs import BOT_TOKEN, API_ID, API_HASH
 
 app = Client(
     "Golchin_bot",
