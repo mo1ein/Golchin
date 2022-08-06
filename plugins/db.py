@@ -1,5 +1,5 @@
 import psycopg2
-from config import DB_NAME, DB_USER, DB_HOST, DB_PASS
+from configs import DB_NAME, DB_USER, DB_HOST, DB_PASS
 
 
 '''
