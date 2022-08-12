@@ -8,11 +8,10 @@ from googletrans import Translator
 
 class ExtractText:
 
-    # TODO: - is checked in clean why should do???
+    # TODO: add more
     STOP_CHARS = '!?$@&*~%|<>:"/=#+-%{}()[];\'.,'
 
-    # empty init??
-    def __init__(self):
+    def __init__(self) -> None:
         pass
 
     def read_srt(self, path: str) -> str:
@@ -187,7 +186,7 @@ class ExtractText:
         # print(len(res))
         # for api limit
         trans_res = []
-        # TODO: better algorithm and dicts and list...
+        # TODO: better algorithm and dicts and list
         for i in str_chunk:
             r = translator.translate(i, src=from_lang, dest=to_lang)
             tmp = i
@@ -303,7 +302,7 @@ class ExtractText:
         filename: str
     ) -> str:
         keys = data[0].keys()
-        # TODO: add statistics words_len and.....
+        # TODO: add statistics words_len and...
         csv_name = f'{filename}.csv'
         with open(csv_name, "w", encoding='utf8', newline='') as file:
             dict_writer = csv.DictWriter(file, keys)
