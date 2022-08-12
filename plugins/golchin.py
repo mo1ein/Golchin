@@ -1,11 +1,11 @@
 import os
 from functools import wraps
-from configs import COMMANDS
 from typing import Union, List
 from pyrogram import Client, filters
-from core.text_extractor import ExtractText
-from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message
 from pyrogram.enums import ChatAction
+from core.text_extractor import ExtractText
+from configs import COMMANDS, ERROR_MESSAGE, BUTTON_MESSAGE, CAPTION
+from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message
 
 
 # TODO: move to config?!
@@ -15,10 +15,14 @@ user_data = {}
 def build_menu(
     buttons: List[InlineKeyboardButton],
     n_cols: int,
-    header_buttons: Union[InlineKeyboardButton,
-                          List[InlineKeyboardButton]] = None,
-    footer_buttons: Union[InlineKeyboardButton,
-                          List[InlineKeyboardButton]] = None
+    header_buttons: Union[
+        InlineKeyboardButton,
+        List[InlineKeyboardButton]
+    ] = None,
+    footer_buttons: Union[
+        InlineKeyboardButton,
+        List[InlineKeyboardButton]
+    ] = None
 ) -> List[List[InlineKeyboardButton]]:
     menu = [buttons[i:i + n_cols] for i in range(0, len(buttons), n_cols)]
     if header_buttons:
@@ -75,39 +79,29 @@ def send_action(action: ChatAction):
 )
 @send_action(ChatAction.TYPING)
 async def dl_file(client, message) -> None:
-    print('here')
+    # print('here')
     original_name = message.document.file_name
     file_type = message.document.mime_type
-    print(file_type)
+    # print(file_type)
     chat_id = message.chat.id
     user_data[chat_id] = original_name
-    if file_type == "application/pdf" or file_type == "application/x-subrip" or file_type == "text/plain":
-        # TODO: naming format for uniqe
+    if (file_type == "application/pdf"
+            or file_type == "application/x-subrip"
+            or file_type == "text/plain"):
+        # TODO: set pattern to file name for uniqe names
         # export with words.pdf or words.html
         await client.download_media(message.document.file_id, original_name)
 
         buttons = create_button()
         reply_markup = InlineKeyboardMarkup(build_menu(buttons, n_cols=3))
 
-        # TODO: set bold for origin name
-        # f"dariaft shod! <b>{original_name}</b>\nwhat output do u want?",
-        rcv_msg = await message.reply_text(
-            f'فایلتو دارمش!\nفرمت خروجی رو انتخاب کن:',
+        await message.reply_text(
+            BUTTON_MESSAGE,
             quote=True,
             reply_markup=reply_markup,
         )
     else:
-        # TODO: change better text and bol with send message
-        # await client.send_message(chat_id = chat_id, )
-        # await message.reply_text("Please send correct file (pdf, text, srt)", quote = True)
-        await message.reply_text("این چیزی که فرستادی رو نمی‌فهمم.\nیه فایل درست بفرست. (pdf, srt, txt)", quote=True)
-
-    # TODO: caption
-    '''
-    loop = asyncio.get_event_loop()
-    loop.create_task(upload_document(client, file_name))
-    '''
-    # await upload_document(client, message, file_name, rcv_msg)
+        await message.reply_text(ERROR_MESSAGE, quote=True)
 
 
 @Client.on_callback_query()
@@ -142,11 +136,9 @@ async def send_pdf(client, callback_query) -> None:
         duplicates_count
     ) = extract_text.clean_words(fulltext)
 
-    # TODO: add bot username
-    bot_username = ''
-    CAPTION = f'بفرمایین خدمتتون!'
-
     """
+    TODO: add bot username to caption
+    bot_username = ''
     CAPTION = (
         f'words length: {len(words_list)}\n'
         f'not added count: {not_added_count}\n'
@@ -176,7 +168,7 @@ async def send_pdf(client, callback_query) -> None:
         # TODO: add send doc..to other func??
         ex = '.pdf' if query.data == 'pdf' else '.html'
         output_filename += ex
-        await upload_document(client, query, output_filename, CAPTION)
+        await upload_document(client, query, output_filename)
     else:
         extract_text.dic_to_csv(
             d,
@@ -189,7 +181,7 @@ async def send_pdf(client, callback_query) -> None:
         )
 
         output_filename += '.csv'
-        await upload_document(client, query, output_filename, CAPTION)
+        await upload_document(client, query, output_filename)
     await query.message.delete()
 
 
@@ -198,11 +190,8 @@ async def upload_document(
     client,
     message,
     file_name: str,
-    caption: str
 ) -> None:
 
-    # TODO: caption add some details words to caption...
-    # print(file_name)
     # print(os.path.exists(f"./downloads/{file_name}"))
     # TODO:
     # if os.path.exists(f"./downloads/{file_name}"):
@@ -210,7 +199,7 @@ async def upload_document(
     await client.send_document(
         chat_id=message.from_user.id,
         document=file_name,
-        caption=caption,
+        caption=CAPTION,
     )
-    # os.remove(file_name)
+    os.remove(file_name)
     print('end of code')
